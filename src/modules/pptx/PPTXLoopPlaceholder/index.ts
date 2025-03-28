@@ -89,7 +89,7 @@ export class PPTXLoopPlaceholder extends Placeholder {
       if (!child.getClonedFrom()) {
         const childClone = child.clone();
 
-        const childCloseNode = child.getCloseNode();
+        const childCloseNode = child.getOriginalCloseNode();
         if (childCloseNode) {
           childClone.setCloseNode(childCloseNode);
         }
