@@ -74,12 +74,11 @@ describe("PPTXPlaceholder", () => {
 
     itemsPlaceholder.populate(data);
 
-    const itemsNodeXMLString = serializer.serializeToString(parentNode)
-      .replace(/\s+/g, "");
-    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML)
-      .replace(/\s+/g, "");
+    const itemsNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
 
-    expect(expectedOutputXMLString == itemsNodeXMLString).toBe(true);
+    expect(expectedOutputXMLString.replace(/\s+/g, ""))
+      .toBe(itemsNodeXMLString.replace(/\s+/g, ""));
   });
 
   it("should clone children correctly with two levels of depth", () => {
@@ -206,9 +205,185 @@ describe("PPTXPlaceholder", () => {
 
     itemsPlaceholder.populate(data);
 
-    const parentNodeXMLString = serializer.serializeToString(parentNode).replace(/\s+/g, "");
-    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML).replace(/\s+/g, "");
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
 
-    expect(expectedOutputXMLString == parentNodeXMLString).toBe(true);
+    expect(expectedOutputXMLString.replace(/\s+/g, ""))
+      .toBe(parentNodeXMLString.replace(/\s+/g, ""));
+  });
+
+  it("should clone children correctly with three levels of depth", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>people1</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>people2</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>people3</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>people4</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{#people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{person}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/people}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/names}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
+    const namesOpenNode = parentNode.getElementsByTagName("a:p")[1];
+    const peopleOpenNode = parentNode.getElementsByTagName("a:p")[2];
+    const personNode = parentNode.getElementsByTagName("a:p")[3];
+    const peopleCloseNode = parentNode.getElementsByTagName("a:p")[4];
+    const namesCloseNode = parentNode.getElementsByTagName("a:p")[5];
+    const itemsCloseNode = parentNode.getElementsByTagName("a:p")[6];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const namesPlaceholder = new PPTXLoopPlaceholder({
+      key: "names",
+      parent: itemsPlaceholder,
+      node: namesOpenNode
+    });
+    const peoplePlaceholder = new PPTXLoopPlaceholder({
+      key: "people",
+      parent: namesPlaceholder,
+      node: peopleOpenNode
+    });
+    const personPlaceholder = new PPTXTextPlaceholder({
+      key: "person",
+      parent: peoplePlaceholder,
+      node: personNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(namesPlaceholder);
+
+    namesPlaceholder.setCloseNode(namesCloseNode);
+    namesPlaceholder.appendChild(peoplePlaceholder);
+
+    peoplePlaceholder.setCloseNode(peopleCloseNode);
+    peoplePlaceholder.appendChild(personPlaceholder);
+
+    const data = [
+      [
+        [
+          "people1",
+          "people2"
+        ]
+      ],
+      [
+        [
+          "people3",
+          "people4"
+        ]
+      ]
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
 });
