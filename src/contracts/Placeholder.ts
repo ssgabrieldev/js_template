@@ -119,6 +119,7 @@ export abstract class Placeholder {
     if (this.firstChild == null) {
       this.firstChild = placeholder;
       this.lastChild = placeholder;
+      placeholder.setParent(this);
 
       return;
     }
