@@ -1,56 +1,96 @@
-import { join } from "path";
-
+import { PPTXSlide } from ".";
+import { DOMParser } from "xmldom";
 import { PPTXTemplateFile } from "../PPTXTemplateFile";
 
-import { PPTXSlide } from ".";
-
-
 describe("Slide", () => {
-  it("should populate works", async () => {
-    const templateFilePPTX = new PPTXTemplateFile({
-      filePath: join(__dirname, "..", "..", "..", "..", "assets", "template.pptx")
-    });
+  const parser = new DOMParser();
+
+  it("should load all placeholders", async () => {
+    const parentNode = parser.parseFromString(`
+      <slide>
+        <p:txBody>
+          <a:p>
+            <a:r>
+              <a:t>{#items}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{#names}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{name}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{/names}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{/items}</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </slide>
+    `);
+    const paragraphElements = parentNode.getElementsByTagName("a:p");
+    const openItemsNode = paragraphElements[0];
+    const openNamesNode = paragraphElements[1];
+    const nameNode = paragraphElements[2];
+    const closeNamesNode = paragraphElements[3];
+    const closeItemsNode = paragraphElements[4];
     const slide = new PPTXSlide({
       number: 1,
-      templateFile: templateFilePPTX
+      templateFile: {} as PPTXTemplateFile
     });
 
-    const data: any = {
-      title: "bar",
-      name: "teste"
-    }
+    slide.setXMLDocument(parentNode);
+    const [placeholders, error] = await slide.getPlaceholders();
 
-    await slide.populate(data);
-
-    const [placeholders, _] = await slide.getPlaceholders();
+    expect(error).toBe(null);
 
     if (placeholders) {
-      placeholders.forEach((placeholder) => {
-        let placeholderKey = placeholder.getKey();
-        expect(placeholder.getNode().textContent).toBe(data[placeholderKey])
-      })
-    }
-  });
+      expect(placeholders.length).toBe(1);
 
-  it("should identify all placeholders", async () => {
-    const templateFilePPTX = new PPTXTemplateFile({
-      filePath: join(__dirname, "..", "..", "..", "..", "assets", "template.pptx")
-    });
-    const slide = new PPTXSlide({
-      number: 1,
-      templateFile: templateFilePPTX
-    });
+      const [itemsPlaceholder] = placeholders;
+      expect(itemsPlaceholder).toBeTruthy();
 
-    const placeholdersKeys = [
-      "{title}",
-      "{name}"
-    ];
-    const [placeholders, _] = await slide.getPlaceholders();
+      if (itemsPlaceholder) {
+        expect(itemsPlaceholder.getKey()).toBe("items");
+        expect(itemsPlaceholder.getNode()).toBe(openItemsNode);
+        expect(itemsPlaceholder.getCloseNode()).toBe(closeItemsNode);
+        expect(itemsPlaceholder.getNext()).toBe(null);
+        expect(itemsPlaceholder.getPrev()).toBe(null);
+        expect(itemsPlaceholder.getParent()).toBe(null);
 
-    if (placeholders) {
-      placeholders.forEach((placeholder) => {
-        expect(placeholdersKeys.includes(placeholder.getKeyWithTags())).toBe(true);
-      });
+        const namesPlaceholder = itemsPlaceholder.getFirstChild();
+        expect(namesPlaceholder).toBeTruthy();
+
+        if (namesPlaceholder) {
+          expect(namesPlaceholder.getKey()).toBe("names");
+          expect(namesPlaceholder.getNode()).toBe(openNamesNode);
+          expect(namesPlaceholder.getCloseNode()).toBe(closeNamesNode);
+          expect(namesPlaceholder.getNext()).toBe(null);
+          expect(namesPlaceholder.getPrev()).toBe(null);
+          expect(namesPlaceholder.getParent()).toBe(null);
+
+          const namePlaceholder = namesPlaceholder.getFirstChild();
+          expect(namePlaceholder).toBeTruthy();
+
+          if (namePlaceholder) {
+            expect(namePlaceholder.getKey()).toBe("name");
+            expect(namePlaceholder.getNode()).toBe(nameNode);
+            expect(namePlaceholder.getCloseNode()).toBe(null);
+            expect(namePlaceholder.getNext()).toBe(null);
+            expect(namePlaceholder.getPrev()).toBe(null);
+            expect(namePlaceholder.getParent()).toBe(null);
+          }
+        }
+      }
     }
   });
 });

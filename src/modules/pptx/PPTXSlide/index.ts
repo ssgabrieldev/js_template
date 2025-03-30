@@ -26,11 +26,15 @@ export class PPTXSlide {
     this.templateFile = templateFile;
   }
 
-  private getFilePath() {
+  public getFilePath() {
     return `ppt/slides/slide${this.number}.xml`;
   }
 
-  private async getXMLDocument(): IPromiseRes<Document> {
+  public getNumber() {
+    return this.number;
+  }
+
+  public async getXMLDocument(): IPromiseRes<Document> {
     if (!this.xmlDocument) {
       const [xml, error] = await this.templateFile.getFileXML({
         filePath: this.getFilePath()
@@ -43,10 +47,28 @@ export class PPTXSlide {
       this.xmlDocument = xml;
     }
 
-    return [this.xmlDocument, null];
+    if (!this.xmlDocument) {
+      return [null, null];
+    }
+
+    return [this.xmlDocument.cloneNode(true) as Document, null];
   }
 
-  private async loadPlaceholders(): IPromiseRes<Placeholder[]> {
+  public setXMLDocument(xmlDocument: Document): void {
+    this.xmlDocument = xmlDocument;
+  }
+
+  public async getPlaceholders(): IPromiseRes<Placeholder[]> {
+    const [_, errorLoadPlaceholders] = await this.loadPlaceholders();
+
+    if (errorLoadPlaceholders) {
+      return [null, errorLoadPlaceholders];
+    }
+
+    return [this.placeholders, null];
+  }
+
+  public async loadPlaceholders(): IPromiseRes<Placeholder[]> {
     const [xmlDocument, error] = await this.getXMLDocument();
     const placeholders: Placeholder[] = [];
     const openPlaceholders: PPTXLoopPlaceholder[] = [];
@@ -147,33 +169,6 @@ export class PPTXSlide {
     return [this.placeholders, null];
   }
 
-  private async save() {
-    const [content, error] = await this.getXMLDocument();
-
-    if (error) {
-      return [null, error];
-    }
-
-    if (content) {
-      this.templateFile.writeXML({
-        filePath: this.getFilePath(),
-        content: content
-      });
-    }
-
-    return [true, null];
-  }
-
-  public async getPlaceholders(): IPromiseRes<Placeholder[]> {
-    const [_, errorLoadPlaceholders] = await this.loadPlaceholders();
-
-    if (errorLoadPlaceholders) {
-      return [null, errorLoadPlaceholders];
-    }
-
-    return [this.placeholders, null];
-  }
-
   public async populate(data: TPopulateData) {
     const [placeholders, error] = await this.loadPlaceholders();
 
@@ -201,6 +196,23 @@ export class PPTXSlide {
       if (error) {
         return [null, error];
       }
+    }
+
+    return [true, null];
+  }
+
+  public async save() {
+    const [content, error] = await this.getXMLDocument();
+
+    if (error) {
+      return [null, error];
+    }
+
+    if (content) {
+      this.templateFile.writeXML({
+        filePath: this.getFilePath(),
+        content: content
+      });
     }
 
     return [true, null];
