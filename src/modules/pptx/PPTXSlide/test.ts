@@ -1,13 +1,41 @@
 import { PPTXSlide } from ".";
-import { DOMParser } from "xmldom";
+import { DOMParser, XMLSerializer } from "xmldom";
 import { PPTXTemplateFile } from "../PPTXTemplateFile";
 
 describe("Slide", () => {
+  const serializer = new XMLSerializer();
   const parser = new DOMParser();
 
   it("should load all placeholders", async () => {
     const parentNode = parser.parseFromString(`
       <slide>
+        <p:txBody>
+          <a:p>
+            <a:r>
+              <a:t>{#items}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{#names}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{name}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{/names}</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:r>
+              <a:t>{/items}</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
         <p:txBody>
           <a:p>
             <a:r>
@@ -61,8 +89,10 @@ describe("Slide", () => {
 
       if (itemsPlaceholder) {
         expect(itemsPlaceholder.getKey()).toBe("items");
-        expect(itemsPlaceholder.getNode()).toBe(openItemsNode);
-        expect(itemsPlaceholder.getCloseNode()).toBe(closeItemsNode);
+        expect(serializer.serializeToString(itemsPlaceholder.getNode()))
+          .toBe(serializer.serializeToString(openItemsNode));
+        expect(serializer.serializeToString(itemsPlaceholder.getCloseNode()!))
+          .toBe(serializer.serializeToString(closeItemsNode));
         expect(itemsPlaceholder.getNext()).toBe(null);
         expect(itemsPlaceholder.getPrev()).toBe(null);
         expect(itemsPlaceholder.getParent()).toBe(null);
@@ -72,22 +102,25 @@ describe("Slide", () => {
 
         if (namesPlaceholder) {
           expect(namesPlaceholder.getKey()).toBe("names");
-          expect(namesPlaceholder.getNode()).toBe(openNamesNode);
-          expect(namesPlaceholder.getCloseNode()).toBe(closeNamesNode);
+          expect(serializer.serializeToString(namesPlaceholder.getNode()))
+            .toBe(serializer.serializeToString(openNamesNode));
+          expect(serializer.serializeToString(namesPlaceholder.getCloseNode()!))
+            .toBe(serializer.serializeToString(closeNamesNode));
           expect(namesPlaceholder.getNext()).toBe(null);
           expect(namesPlaceholder.getPrev()).toBe(null);
-          expect(namesPlaceholder.getParent()).toBe(null);
+          expect(namesPlaceholder.getParent()).toBe(itemsPlaceholder);
 
           const namePlaceholder = namesPlaceholder.getFirstChild();
           expect(namePlaceholder).toBeTruthy();
 
           if (namePlaceholder) {
             expect(namePlaceholder.getKey()).toBe("name");
-            expect(namePlaceholder.getNode()).toBe(nameNode);
+            expect(serializer.serializeToString(namePlaceholder.getNode()))
+              .toBe(serializer.serializeToString(nameNode));
             expect(namePlaceholder.getCloseNode()).toBe(null);
             expect(namePlaceholder.getNext()).toBe(null);
             expect(namePlaceholder.getPrev()).toBe(null);
-            expect(namePlaceholder.getParent()).toBe(null);
+            expect(namePlaceholder.getParent()).toBe(namesPlaceholder);
           }
         }
       }
