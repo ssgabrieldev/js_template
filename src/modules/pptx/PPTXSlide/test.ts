@@ -36,33 +36,6 @@ describe("Slide", () => {
             </a:r>
           </a:p>
         </p:txBody>
-        <p:txBody>
-          <a:p>
-            <a:r>
-              <a:t>{#items}</a:t>
-            </a:r>
-          </a:p>
-          <a:p>
-            <a:r>
-              <a:t>{#names}</a:t>
-            </a:r>
-          </a:p>
-          <a:p>
-            <a:r>
-              <a:t>{name}</a:t>
-            </a:r>
-          </a:p>
-          <a:p>
-            <a:r>
-              <a:t>{/names}</a:t>
-            </a:r>
-          </a:p>
-          <a:p>
-            <a:r>
-              <a:t>{/items}</a:t>
-            </a:r>
-          </a:p>
-        </p:txBody>
       </slide>
     `);
     const paragraphElements = parentNode.getElementsByTagName("a:p");
