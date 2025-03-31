@@ -186,6 +186,65 @@ describe("Slide", () => {
     }
   });
 
+  it("should load all placeholders when loop starts and ends in the same line", async () => {
+    const parentNode = parser.parseFromString(`
+      <slide>
+        <p:txBody>
+          <a:p>
+            <a:r>
+              <a:t>{#items}{item}{/items}</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </slide>
+    `);
+    const paragraphElements = parentNode.getElementsByTagName("a:p");
+    const openItemsNode = paragraphElements[0];
+    const itemNode = paragraphElements[0];
+    const closeItemsNode = paragraphElements[0];
+    const slide = new PPTXSlide({
+      number: 1,
+      templateFile: {} as PPTXTemplateFile
+    });
+
+    slide.setXMLDocument(parentNode);
+    const [placeholders, error] = await slide.getPlaceholders();
+
+    expect(error).toBe(null);
+    expect(placeholders).toBeTruthy();
+
+    if (placeholders) {
+      expect(placeholders.length).toBe(1);
+
+      const [itemsPlaceholder] = placeholders;
+      expect(itemsPlaceholder).toBeTruthy();
+
+      if (itemsPlaceholder) {
+        expect(itemsPlaceholder.getKey()).toBe("items");
+        expect(serializer.serializeToString(itemsPlaceholder.getNode()))
+          .toBe(serializer.serializeToString(openItemsNode));
+        expect(serializer.serializeToString(itemsPlaceholder.getCloseNode()!))
+          .toBe(serializer.serializeToString(closeItemsNode));
+        expect(itemsPlaceholder.getNext()).toBe(null);
+        expect(itemsPlaceholder.getPrev()).toBe(null);
+        expect(itemsPlaceholder.getParent()).toBe(null);
+
+        const itemPlaceholder = itemsPlaceholder.getFirstChild();
+        expect(itemPlaceholder).toBeTruthy();
+
+        if (itemPlaceholder) {
+          expect(itemPlaceholder.getKey()).toBe("item");
+          expect(serializer.serializeToString(itemPlaceholder.getNode()))
+            .toBe(serializer.serializeToString(itemNode));
+          expect(itemPlaceholder.getCloseNode()).toBe(null);
+          expect(itemPlaceholder.getNext()).toBe(null);
+          expect(itemPlaceholder.getPrev()).toBe(null);
+          expect(itemPlaceholder.getParent()).toBe(itemsPlaceholder);
+        }
+      }
+    }
+  });
+
   it("should treat nodes that don't have a placeholder as text placeholder", async () => {
     const parentNode = parser.parseFromString(`
       <slide>

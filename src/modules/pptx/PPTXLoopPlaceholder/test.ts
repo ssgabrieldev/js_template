@@ -387,7 +387,7 @@ describe("PPTXPlaceholder", () => {
       .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
 
-  it("should clone random text placeholder", () => {
+  it("should clone random text node", () => {
     const expectedOutputXML = parser.parseFromString(`
       <p:txBody>
         <a:p>
@@ -434,6 +434,57 @@ describe("PPTXPlaceholder", () => {
     const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
     const randomTextNode = parentNode.getElementsByTagName("a:p")[1];
     const itemsCloseNode = parentNode.getElementsByTagName("a:p")[2];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const randomTextPlaceholder = new PPTXTextPlaceholder({
+      key: "",
+      parent: itemsPlaceholder,
+      node: randomTextNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(randomTextPlaceholder);
+
+    const data = [
+      "people1",
+      "people2"
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
+  });
+
+  it("should clone children when loop starts and ends on the same line", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}item1,item2,{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}{item},{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const textElements = parentNode.getElementsByTagName("a:p");
+    const itemsOpenNode = textElements[0];
+    const randomTextNode = textElements[0];
+    const itemsCloseNode = textElements[0];
     const itemsPlaceholder = new PPTXLoopPlaceholder({
       key: "items",
       parent: null,
