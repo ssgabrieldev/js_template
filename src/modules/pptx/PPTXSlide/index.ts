@@ -160,6 +160,17 @@ export class PPTXSlide {
               continue;
             }
           }
+        } else if (openPlaceholders.length > 0) {
+          const openPlaceholder = openPlaceholders[openPlaceholders.length - 1];
+          const textPlaceholder = PPTXPlaceholderBuilder.new({
+            key: "",
+            parent: openPlaceholder,
+            node
+          });
+
+          if (textPlaceholder) {
+            openPlaceholder.appendChild(textPlaceholder);
+          }
         }
       }
     }

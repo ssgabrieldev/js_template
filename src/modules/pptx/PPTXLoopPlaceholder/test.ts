@@ -386,4 +386,79 @@ describe("PPTXPlaceholder", () => {
     expect(parentNodeXMLString.replace(/\s+/g, ""))
       .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
+
+  it("should clone random text placeholder", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>random text</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>random text</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>random text</a:t>
+          </a:r>
+        </a:p>
+        <a:p>
+          <a:r>
+            <a:t>{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
+    const randomTextNode = parentNode.getElementsByTagName("a:p")[1];
+    const itemsCloseNode = parentNode.getElementsByTagName("a:p")[2];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const randomTextPlaceholder = new PPTXTextPlaceholder({
+      key: "",
+      parent: itemsPlaceholder,
+      node: randomTextNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(randomTextPlaceholder);
+
+    const data = [
+      "people1",
+      "people2"
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
+  });
 });
