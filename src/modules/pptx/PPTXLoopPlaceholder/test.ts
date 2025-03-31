@@ -500,8 +500,8 @@ describe("PPTXPlaceholder", () => {
     itemsPlaceholder.appendChild(randomTextPlaceholder);
 
     const data = [
-      "people1",
-      "people2"
+      "item1",
+      "item2"
     ];
 
     itemsPlaceholder.populate(data);
