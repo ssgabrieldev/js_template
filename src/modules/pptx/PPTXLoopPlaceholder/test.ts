@@ -49,7 +49,7 @@ describe("PPTXPlaceholder", () => {
           </a:r>
         </a:p>
       </p:txBody>
-    `);
+    `.replace(/\s+/g, ""));
     const openItemsNode = parentNode.getElementsByTagName("a:p")[0];
     const itemNode = parentNode.getElementsByTagName("a:p")[1];
     const closeItemsNode = parentNode.getElementsByTagName("a:p")[2];
@@ -164,7 +164,7 @@ describe("PPTXPlaceholder", () => {
           </a:r>
         </a:p>
       </p:txBody>
-    `);
+    `.replace(/\s+/g, ""));
     const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
     const namesOpenNode = parentNode.getElementsByTagName("a:p")[1];
     const lorenNode = parentNode.getElementsByTagName("a:p")[2];
@@ -325,7 +325,7 @@ describe("PPTXPlaceholder", () => {
           </a:r>
         </a:p>
       </p:txBody>
-    `);
+    `.replace(/\s+/g, ""));
     const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
     const namesOpenNode = parentNode.getElementsByTagName("a:p")[1];
     const peopleOpenNode = parentNode.getElementsByTagName("a:p")[2];
@@ -430,7 +430,7 @@ describe("PPTXPlaceholder", () => {
           </a:r>
         </a:p>
       </p:txBody>
-    `);
+    `.replace(/\s+/g, ""));
     const itemsOpenNode = parentNode.getElementsByTagName("a:p")[0];
     const randomTextNode = parentNode.getElementsByTagName("a:p")[1];
     const itemsCloseNode = parentNode.getElementsByTagName("a:p")[2];
@@ -467,8 +467,12 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}item1,item2,{/items}</a:t>
+            <a:t>{#items}item1,{/items}</a:t>
           </a:r>
+          <a:r>
+            <a:t>{#items}item2,{/items}</a:t>
+          </a:r>
+          </br>
         </a:p>
       </p:txBody>
     `);
@@ -479,25 +483,26 @@ describe("PPTXPlaceholder", () => {
             <a:t>{#items}{item},{/items}</a:t>
           </a:r>
         </a:p>
+        </br>
       </p:txBody>
-    `);
+    `.replace(/\s+/g, ""));
     const textElements = parentNode.getElementsByTagName("a:p");
     const itemsOpenNode = textElements[0];
-    const randomTextNode = textElements[0];
+    const itemNode = textElements[0];
     const itemsCloseNode = textElements[0];
     const itemsPlaceholder = new PPTXLoopPlaceholder({
       key: "items",
       parent: null,
       node: itemsOpenNode
     });
-    const randomTextPlaceholder = new PPTXTextPlaceholder({
-      key: "",
+    const itemPlaceholder = new PPTXTextPlaceholder({
+      key: "item",
       parent: itemsPlaceholder,
-      node: randomTextNode
+      node: itemNode
     });
 
     itemsPlaceholder.setCloseNode(itemsCloseNode);
-    itemsPlaceholder.appendChild(randomTextPlaceholder);
+    itemsPlaceholder.appendChild(itemPlaceholder);
 
     const data = [
       "item1",

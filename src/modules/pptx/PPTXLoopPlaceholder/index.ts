@@ -39,13 +39,7 @@ export class PPTXLoopPlaceholder extends Placeholder {
             if (!childClonedFrom && !clonedFrom) {
               const childClone = child.clone();
 
-              const parent = child.getParent();
-              const shoulCreateNewNodes = !!(
-                parent
-                && parent.getNode() != parent.getCloseNode()
-              );
-
-              this.appendChild(childClone, shoulCreateNewNodes);
+              this.appendChild(childClone, true);
 
               childClone.populate(d);
 
@@ -88,9 +82,9 @@ export class PPTXLoopPlaceholder extends Placeholder {
     }
 
     const placeholderClone = new PPTXLoopPlaceholder({
+      node,
       parent: this.getParent(),
       key: this.getKey(),
-      node,
       clonedFrom: this
     });
 

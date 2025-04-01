@@ -14,7 +14,7 @@ export class PPTXTextPlaceholder extends Placeholder {
   }
 
   public populate(data: string): void {
-    const textElements = this.node.getElementsByTagName("a:t");
+    const textElements = this.getNode().getElementsByTagName("a:t");
     const openTag = this.getOpenTag();
     
     for (let i = 0; i < textElements.length; i++) {
@@ -27,10 +27,18 @@ export class PPTXTextPlaceholder extends Placeholder {
   }
 
   public clone(): PPTXTextPlaceholder {
+    const parent = this.getParent();
+
+    let node = this.getOriginalNode();
+
+    if (parent && parent.getNode() == this.getNode()) {
+      node = this.getNode();
+    }
+
     const placeholderClone = new PPTXTextPlaceholder({
       parent: this.getParent(),
       key: this.getKey(),
-      node: this.getOriginalNode(),
+      node,
       clonedFrom: this
     });
 

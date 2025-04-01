@@ -1,3 +1,5 @@
+import { argv0 } from "process";
+
 export type TPlaceholderContructor = {
   key: string;
   node: Element;
@@ -8,16 +10,17 @@ export type TPlaceholderContructor = {
 export abstract class Placeholder {
   protected key: string;
   protected node: Element;
+  protected originalNode: Element;
+
+  protected clonedFrom?: Placeholder;
 
   protected closeNode: Element | null = null;
-  protected originalNode: Element;
   protected originalCloseNode: Element | null = null;
   protected parent: Placeholder | null = null;
   protected firstChild: Placeholder | null = null;
   protected lastChild: Placeholder | null = null;
   protected next: Placeholder | null = null;
   protected prev: Placeholder | null = null;
-  protected clonedFrom?: Placeholder;
 
   public abstract populate(data: any): void;
   public abstract clone(): Placeholder;
@@ -27,9 +30,14 @@ export abstract class Placeholder {
   constructor({ key, node, parent, clonedFrom }: TPlaceholderContructor) {
     this.key = key;
     this.node = node;
-    this.originalNode = node.cloneNode(true) as Element;
     this.parent = parent;
     this.clonedFrom = clonedFrom;
+
+    if (clonedFrom) {
+      this.originalNode = clonedFrom.getOriginalNode().cloneNode(true) as Element;
+    } else {
+      this.originalNode = node.cloneNode(true) as Element;
+    }
   }
 
   public getKey(): string {
@@ -94,29 +102,48 @@ export abstract class Placeholder {
   }
 
   public appendNodeFromPlaceholder(placeholder: Placeholder): void {
-    if (this.closeNode?.parentNode) {
-      this.closeNode.parentNode.insertBefore(placeholder.getNode(), this.closeNode);
-    
+    const closeNode = this.getCloseNode();
+    const node = this.getNode();
+
+    if (closeNode == node) {
+      const placeholderOriginalNode = placeholder.getOriginalNode();
+
+      const originalLines = placeholderOriginalNode.getElementsByTagName("a:r");
+
+      for (let i = 0; i < originalLines.length; i++) {
+        const originalLine = originalLines[originalLines.length - 1];
+        const lines = node.getElementsByTagName("a:r");
+        const lastLine = lines[lines.length - 1];
+
+        if (lastLine.nextSibling) {
+          node.insertBefore(originalLine, lastLine);
+        } else if (node.parentNode) {
+          node.appendChild(originalLine);
+        }
+      }
+    } else if (closeNode && closeNode.parentNode) {
+      closeNode.parentNode.insertBefore(placeholder.getNode(), this.closeNode);
+
       const placeholderCloseNode = placeholder.getCloseNode();
       if (placeholderCloseNode) {
-        this.closeNode.parentNode.insertBefore(placeholderCloseNode, this.closeNode);
+        closeNode.parentNode.insertBefore(placeholderCloseNode, this.closeNode);
       }
-    
-      let child = placeholder.getFirstChild();
-      while (child) {
+
+      for (let child = placeholder.getFirstChild(); child; child = child.getNext()) {
         placeholder.appendNodeFromPlaceholder(child);
-    
-        child = child.getNext();
       }
     }
   }
 
   public appendChild(placeholder: Placeholder, appendNode?: boolean): void {
+    const firstChild = this.getFirstChild();
+    const lastChild = this.getLastChild();
+
     if (appendNode) {
       this.appendNodeFromPlaceholder(placeholder);
     }
 
-    if (this.firstChild == null) {
+    if (!firstChild) {
       this.firstChild = placeholder;
       this.lastChild = placeholder;
       placeholder.setParent(this);
@@ -124,9 +151,9 @@ export abstract class Placeholder {
       return;
     }
 
-    if (this.lastChild) {
+    if (lastChild) {
       placeholder.setPrev(this.lastChild);
-      this.lastChild.next = placeholder;
+      lastChild.next = placeholder;
     }
 
     placeholder.setParent(this);
