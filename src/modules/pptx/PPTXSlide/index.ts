@@ -51,7 +51,7 @@ export class PPTXSlide {
       return [null, null];
     }
 
-    return [this.xmlDocument.cloneNode(true) as Document, null];
+    return [this.xmlDocument as Document, null];
   }
 
   public setXMLDocument(xmlDocument: Document): void {
