@@ -1,29 +1,27 @@
-import { argv0 } from "process";
-
 export type TPlaceholderContructor = {
   key: string;
   node: Element;
-  parent: Placeholder | null;
-  clonedFrom?: Placeholder;
+  parent: PPTXPlaceholder | null;
+  clonedFrom?: PPTXPlaceholder;
 }
 
-export abstract class Placeholder {
+export abstract class PPTXPlaceholder {
   protected key: string;
   protected node: Element;
   protected originalNode: Element;
 
-  protected clonedFrom?: Placeholder;
+  protected clonedFrom?: PPTXPlaceholder;
 
   protected closeNode: Element | null = null;
   protected originalCloseNode: Element | null = null;
-  protected parent: Placeholder | null = null;
-  protected firstChild: Placeholder | null = null;
-  protected lastChild: Placeholder | null = null;
-  protected next: Placeholder | null = null;
-  protected prev: Placeholder | null = null;
+  protected parent: PPTXPlaceholder | null = null;
+  protected firstChild: PPTXPlaceholder | null = null;
+  protected lastChild: PPTXPlaceholder | null = null;
+  protected next: PPTXPlaceholder | null = null;
+  protected prev: PPTXPlaceholder | null = null;
 
   public abstract populate(data: any): void;
-  public abstract clone(): Placeholder;
+  public abstract clone(): PPTXPlaceholder;
   public abstract getOpenTag(): string;
   public abstract getCloseTag(): string;
 
@@ -60,27 +58,27 @@ export abstract class Placeholder {
     return this.originalCloseNode?.cloneNode(true) as Element | null;
   }
 
-  public getParent(): Placeholder | null {
+  public getParent(): PPTXPlaceholder | null {
     return this.parent;
   }
 
-  public getFirstChild(): Placeholder | null {
+  public getFirstChild(): PPTXPlaceholder | null {
     return this.firstChild;
   }
 
-  public getLastChild(): Placeholder | null {
+  public getLastChild(): PPTXPlaceholder | null {
     return this.lastChild;
   }
 
-  public getPrev(): Placeholder | null {
+  public getPrev(): PPTXPlaceholder | null {
     return this.prev;
   }
 
-  public getNext(): Placeholder | null {
+  public getNext(): PPTXPlaceholder | null {
     return this.next;
   }
 
-  public getClonedFrom(): Placeholder | undefined {
+  public getClonedFrom(): PPTXPlaceholder | undefined {
     return this.clonedFrom;
   }
 
@@ -89,19 +87,19 @@ export abstract class Placeholder {
     this.originalCloseNode = node.cloneNode(true) as Element;
   }
 
-  public setPrev(placeholder: Placeholder | null): void {
+  public setPrev(placeholder: PPTXPlaceholder | null): void {
     this.prev = placeholder;
   }
 
-  public setNext(placeholder: Placeholder | null): void {
+  public setNext(placeholder: PPTXPlaceholder | null): void {
     this.next = placeholder;
   }
 
-  public setParent(placeholder: Placeholder): void {
+  public setParent(placeholder: PPTXPlaceholder): void {
     this.parent = placeholder;
   }
 
-  public appendNodeFromPlaceholder(placeholder: Placeholder): void {
+  public appendNodeFromPlaceholder(placeholder: PPTXPlaceholder): void {
     const closeNode = this.getCloseNode();
     const node = this.getNode();
 
@@ -135,7 +133,7 @@ export abstract class Placeholder {
     }
   }
 
-  public appendChild(placeholder: Placeholder, appendNode?: boolean): void {
+  public appendChild(placeholder: PPTXPlaceholder, appendNode?: boolean): void {
     const firstChild = this.getFirstChild();
     const lastChild = this.getLastChild();
 

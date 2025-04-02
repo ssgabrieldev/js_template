@@ -1,6 +1,6 @@
-import { Placeholder, TPlaceholderContructor } from "../../../contracts/Placeholder";
+import { PPTXPlaceholder, TPlaceholderContructor } from "../PPTXPlaceholder";
 
-export class PPTXTextPlaceholder extends Placeholder {
+export class PPTXTextPlaceholder extends PPTXPlaceholder {
   constructor(data: TPlaceholderContructor) {
     super(data);
   }

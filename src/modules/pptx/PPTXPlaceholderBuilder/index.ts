@@ -1,4 +1,4 @@
-import { Placeholder, TPlaceholderContructor } from "../../../contracts/Placeholder";
+import { PPTXPlaceholder, TPlaceholderContructor } from "../PPTXPlaceholder";
 import { PPTXLoopPlaceholder } from "../PPTXLoopPlaceholder";
 import { PPTXTextPlaceholder } from "../PPTXTextPlaceholder";
 
@@ -11,7 +11,7 @@ export class PPTXPlaceholderBuilder {
     return key.replace(/^{#/, "").replace(/}$/, "");
   }
 
-  public static new(params: TPlaceholderContructor): Placeholder | false {
+  public static new(params: TPlaceholderContructor): PPTXPlaceholder | false {
     const { key, node, parent } = params;
 
     if (key.match(/^{#/)) {

@@ -7,7 +7,7 @@ import { ErrorCantGetFileXML } from "../../error/ErrorCantGetFileXML";
 
 import { PPTXTemplateFile } from "../PPTXTemplateFile";
 import { PPTXPlaceholderBuilder } from "../PPTXPlaceholderBuilder";
-import { Placeholder, TPlaceholderContructor } from "../../../contracts/Placeholder";
+import { PPTXPlaceholder, TPlaceholderContructor } from "../PPTXPlaceholder";
 import { PPTXLoopPlaceholder } from "../PPTXLoopPlaceholder";
 
 type TConstructor = {
@@ -19,7 +19,7 @@ export class PPTXSlide {
   private templateFile: PPTXTemplateFile;
   private number: number;
   private xmlDocument: Document | null = null;
-  private placeholders: Placeholder[] = [];
+  private placeholders: PPTXPlaceholder[] = [];
 
   constructor({ number, templateFile }: TConstructor) {
     this.number = number;
@@ -58,7 +58,7 @@ export class PPTXSlide {
     this.xmlDocument = xmlDocument;
   }
 
-  public async getPlaceholders(): IPromiseRes<Placeholder[]> {
+  public async getPlaceholders(): IPromiseRes<PPTXPlaceholder[]> {
     const [_, errorLoadPlaceholders] = await this.loadPlaceholders();
 
     if (errorLoadPlaceholders) {
@@ -68,9 +68,9 @@ export class PPTXSlide {
     return [this.placeholders, null];
   }
 
-  public async loadPlaceholders(): IPromiseRes<Placeholder[]> {
+  public async loadPlaceholders(): IPromiseRes<PPTXPlaceholder[]> {
     const [xmlDocument, error] = await this.getXMLDocument();
-    const placeholders: Placeholder[] = [];
+    const placeholders: PPTXPlaceholder[] = [];
     const openPlaceholders: PPTXLoopPlaceholder[] = [];
 
     if (error) {
