@@ -11,7 +11,7 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -26,7 +26,7 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
       </p:txBody>
@@ -86,12 +86,12 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -106,12 +106,12 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -126,12 +126,12 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
       </p:txBody>
@@ -217,17 +217,17 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#people}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -242,22 +242,22 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/people}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{#people}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -272,17 +272,17 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/people}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/names}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
       </p:txBody>
@@ -392,7 +392,7 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
         <a:p>
@@ -407,7 +407,7 @@ describe("PPTXPlaceholder", () => {
         </a:p>
         <a:p>
           <a:r>
-            <a:t>{/items}</a:t>
+            <a:t></a:t>
           </a:r>
         </a:p>
       </p:txBody>
@@ -462,17 +462,13 @@ describe("PPTXPlaceholder", () => {
       .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
 
-  it("should clone children when loop starts and ends on the same line (one depth level)", () => {
+  it("should clone children when loop starts and ends on the same line and same node (one depth level)", () => {
     const expectedOutputXML = parser.parseFromString(`
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}item1,{/items}</a:t>
+            <a:t>item1,item2,item3,item4,</a:t>
           </a:r>
-          <a:r>
-            <a:t>{#items}item2,{/items}</a:t>
-          </a:r>
-          </br>
         </a:p>
       </p:txBody>
     `);
@@ -483,7 +479,6 @@ describe("PPTXPlaceholder", () => {
             <a:t>{#items}{item},{/items}</a:t>
           </a:r>
         </a:p>
-        </br>
       </p:txBody>
     `.replace(/\s+/g, ""));
     const textElements = parentNode.getElementsByTagName("a:p");
@@ -506,7 +501,9 @@ describe("PPTXPlaceholder", () => {
 
     const data = [
       "item1",
-      "item2"
+      "item2",
+      "item3",
+      "item4"
     ];
 
     itemsPlaceholder.populate(data);
@@ -518,23 +515,13 @@ describe("PPTXPlaceholder", () => {
       .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
 
-  it("should clone children when loop starts and ends on the same line (two depth levels)", () => {
+  it("should clone children when loop starts and ends on the same line and same node (two depth levels)", () => {
     const expectedOutputXML = parser.parseFromString(`
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}{#names}name1{/names}{/items}</a:t>
+            <a:t>prev text names: name1,name2, names: name3,name4,</a:t>
           </a:r>
-          <a:r>
-            <a:t>{#items}{#names}name2{/names}{/items}</a:t>
-          </a:r>
-          <a:r>
-            <a:t>{#items}{#names}name3{/names}{/items}</a:t>
-          </a:r>
-          <a:r>
-            <a:t>{#items}{#names}name4{/names}{/items}</a:t>
-          </a:r>
-          </br>
         </a:p>
       </p:txBody>
     `);
@@ -542,10 +529,9 @@ describe("PPTXPlaceholder", () => {
       <p:txBody>
         <a:p>
           <a:r>
-            <a:t>{#items}{#names}{name}{/names}{/items}</a:t>
+            <a:t>prev text {#items}names: {#names}{name},{/names}{/items}</a:t>
           </a:r>
         </a:p>
-        </br>
       </p:txBody>
     `.replace(/\s+/g, ""));
     const textElements = parentNode.getElementsByTagName("a:p");
@@ -584,6 +570,87 @@ describe("PPTXPlaceholder", () => {
       [
         "name3",
         "name4"
+      ]
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
+  });
+
+  it("should clone children when loop starts and ends on the same line and same node (three depth levels)", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>prev text names: name1,name2,-names: name3,name4,-</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>prev text {#items}names: {#names}{#modules}{module},{/modules}-{/names}{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `.replace(/\s+/g, ""));
+    const textElements = parentNode.getElementsByTagName("a:p");
+    const itemsOpenNode = textElements[0];
+    const namesOpenNode = textElements[0];
+    const modulesOpenNode = textElements[0];
+    const moduleNode = textElements[0];
+    const modulesCloseNode = textElements[0];
+    const namesCloseNode = textElements[0];
+    const itemsCloseNode = textElements[0];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const namesPlaceholder = new PPTXLoopPlaceholder({
+      key: "names",
+      parent: null,
+      node: namesOpenNode
+    });
+    const modulesPlaceholder = new PPTXLoopPlaceholder({
+      key: "modules",
+      parent: null,
+      node: modulesOpenNode
+    });
+    const modulePlaceholder = new PPTXTextPlaceholder({
+      key: "module",
+      parent: itemsPlaceholder,
+      node: moduleNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(namesPlaceholder);
+
+    namesPlaceholder.setCloseNode(namesCloseNode);
+    namesPlaceholder.appendChild(modulesPlaceholder);
+
+    modulesPlaceholder.setCloseNode(modulesCloseNode);
+    modulesPlaceholder.appendChild(modulePlaceholder);
+
+    const data = [
+      [
+        [
+          "name1",
+          "name2"
+        ]
+      ],
+      [
+        [
+          "name3",
+          "name4"
+        ]
       ]
     ];
 

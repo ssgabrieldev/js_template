@@ -100,23 +100,28 @@ export abstract class PPTXPlaceholder {
   }
 
   public appendNodeFromPlaceholder(placeholder: PPTXPlaceholder): void {
+    const openTag = this.getOpenTag();
+    const closeTag = this.getCloseTag();
     const closeNode = this.getCloseNode();
     const node = this.getNode();
+    const originalNode = this.getOriginalNode();
 
     if (closeNode == node) {
-      const placeholderOriginalNode = placeholder.getOriginalNode();
+      const textNodes = node.getElementsByTagName("a:t");
+      const hasOnlyOneTextNode = textNodes.length == 1;
 
-      const originalLines = placeholderOriginalNode.getElementsByTagName("a:r");
+      if (hasOnlyOneTextNode) {
+        const textNode = textNodes[0];
+        const textContent = originalNode.textContent;
 
-      for (let i = 0; i < originalLines.length; i++) {
-        const originalLine = originalLines[originalLines.length - 1];
-        const lines = node.getElementsByTagName("a:r");
-        const lastLine = lines[lines.length - 1];
+        if (textContent) {
+          const [content] = textContent.match(new RegExp(`${openTag}.*${closeTag}`)) || [];
 
-        if (lastLine.nextSibling) {
-          node.insertBefore(originalLine, lastLine);
-        } else if (node.parentNode) {
-          node.appendChild(originalLine);
+          if (content && textNode.textContent) {
+            const finalContent = content.replace(openTag, "").replace(closeTag, "");
+
+            textNode.textContent = textNode.textContent.replace(closeTag, `${finalContent}${closeTag}`);
+          }
         }
       }
     } else if (closeNode && closeNode.parentNode) {
@@ -156,5 +161,34 @@ export abstract class PPTXPlaceholder {
 
     placeholder.setParent(this);
     this.lastChild = placeholder;
+  }
+
+  public removeTags() {
+    const openNode = this.getNode();
+    const closeNode = this.getCloseNode();
+
+    const openNodeTextNodes = openNode.getElementsByTagName("a:t");
+
+    for (let i = 0; i < openNodeTextNodes.length; i++) {
+      const textNode = openNodeTextNodes[i];
+      const textContent = textNode.textContent;
+
+      if (textContent) {
+        textNode.textContent = textContent.replaceAll(this.getOpenTag(), "");
+      }
+    }
+
+    if (closeNode) {
+      const closeNodeTextNodes = closeNode.getElementsByTagName("a:t");
+
+      for (let i = 0; i < closeNodeTextNodes.length; i++) {
+        const textNode = closeNodeTextNodes[i];
+        const textContent = textNode.textContent;
+
+        if (textContent) {
+          textNode.textContent = textContent.replaceAll(this.getCloseTag(), "");
+        }
+      }
+    }
   }
 }

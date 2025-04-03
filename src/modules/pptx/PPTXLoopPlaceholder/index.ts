@@ -68,6 +68,8 @@ export class PPTXLoopPlaceholder extends PPTXPlaceholder {
         }
       });
     }
+
+    this.removeTags();
   }
 
   clone(): PPTXLoopPlaceholder {
