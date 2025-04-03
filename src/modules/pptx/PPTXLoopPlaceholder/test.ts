@@ -662,4 +662,81 @@ describe("PPTXPlaceholder", () => {
     expect(parentNodeXMLString.replace(/\s+/g, ""))
       .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
   });
+
+  it("should clone children when loop starts and ends on the same line but not in same node (one depth level)", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>prev text item1</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>item2</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>item3</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>item4</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>prev text {#items}{item}</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `.replace(/\s+/g, ""));
+    const textElements = parentNode.getElementsByTagName("a:p");
+    const itemsOpenNode = textElements[0];
+    const itemNode = textElements[0];
+    const itemsCloseNode = textElements[1];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const itemPlaceholder = new PPTXTextPlaceholder({
+      key: "item",
+      parent: itemsPlaceholder,
+      node: itemNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(itemPlaceholder);
+
+    const data = [
+      "item1",
+      "item2",
+      "item3",
+      "item4"
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
+  });
 });
