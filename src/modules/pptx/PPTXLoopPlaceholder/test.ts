@@ -709,7 +709,7 @@ describe("PPTXPlaceholder", () => {
     const textElements = parentNode.getElementsByTagName("a:p");
     const itemsOpenNode = textElements[0];
     const itemNode = textElements[0];
-    const itemsCloseNode = textElements[1];
+    const itemsCloseNode = textElements[0];
     const itemsPlaceholder = new PPTXLoopPlaceholder({
       key: "items",
       parent: null,
@@ -729,6 +729,97 @@ describe("PPTXPlaceholder", () => {
       "item2",
       "item3",
       "item4"
+    ];
+
+    itemsPlaceholder.populate(data);
+
+    const parentNodeXMLString = serializer.serializeToString(parentNode);
+    const expectedOutputXMLString = serializer.serializeToString(expectedOutputXML);
+
+    expect(parentNodeXMLString.replace(/\s+/g, ""))
+      .toBe(expectedOutputXMLString.replace(/\s+/g, ""));
+  });
+
+  it("should clone children when loop starts and ends on the same line but not in same node (two depth level)", () => {
+    const expectedOutputXML = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>prev text item1</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>item2</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>prev text item3</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+          <a:r>
+            <a:t>item4</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `);
+    const parentNode = parser.parseFromString(`
+      <p:txBody>
+        <a:p>
+          <a:r>
+            <a:t>{#items}prev text {#names}{name}</a:t>
+          </a:r>
+          <a:r>
+            <a:t>,{/names}{/items}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    `.replace(/\s+/g, ""));
+    const textElements = parentNode.getElementsByTagName("a:p");
+    const itemsOpenNode = textElements[0];
+    const namesOpenNode = textElements[0];
+    const nameNode = textElements[0];
+    const namesCloseNode = textElements[0];
+    const itemsCloseNode = textElements[0];
+    const itemsPlaceholder = new PPTXLoopPlaceholder({
+      key: "items",
+      parent: null,
+      node: itemsOpenNode
+    });
+    const namesPlaceholder = new PPTXLoopPlaceholder({
+      key: "names",
+      parent: null,
+      node: namesOpenNode
+    });
+    const namePlaceholder = new PPTXTextPlaceholder({
+      key: "name",
+      parent: namesPlaceholder,
+      node: nameNode
+    });
+
+    itemsPlaceholder.setCloseNode(itemsCloseNode);
+    itemsPlaceholder.appendChild(namesPlaceholder);
+
+    namesPlaceholder.setCloseNode(namesCloseNode);
+    namesPlaceholder.appendChild(namePlaceholder);
+
+    const data = [
+      [
+        "item1",
+        "item2"
+      ],
+      [
+        "item3",
+        "item4"
+      ]
     ];
 
     itemsPlaceholder.populate(data);

@@ -99,6 +99,70 @@ export abstract class PPTXPlaceholder {
     this.parent = placeholder;
   }
 
+  public getOriginalOpenTagLineNode(): Element | undefined {
+    const node = this.getOriginalNode();
+
+    const lineNodes = node.getElementsByTagName("a:r");
+
+    for (let i = 0; i < lineNodes.length; i++) {
+      const lineNode = lineNodes[i];
+
+      if (lineNode.textContent && lineNode.textContent.match(this.getOpenTag())) {
+        return lineNode;
+      }
+    }
+  }
+
+  public getOriginalCloseTagLineNode(): Element | undefined {
+    const node = this.getOriginalCloseNode();
+
+    if (!node) {
+      return;
+    }
+
+    const lineNodes = node.getElementsByTagName("a:r");
+
+    for (let i = 0; i < lineNodes.length; i++) {
+      const lineNode = lineNodes[i];
+
+      if (lineNode.textContent && lineNode.textContent.match(this.getCloseTag())) {
+        return lineNode;
+      }
+    }
+  }
+
+  public getOpenTagLineNode(): Element | undefined {
+    const node = this.getNode();
+
+    const lineNodes = node.getElementsByTagName("a:r");
+
+    for (let i = 0; i < lineNodes.length; i++) {
+      const lineNode = lineNodes[i];
+
+      if (lineNode.textContent && lineNode.textContent.match(this.getOpenTag())) {
+        return lineNode;
+      }
+    }
+  }
+
+  public getCloseTagLineNode(): Element | undefined {
+    const node = this.getCloseNode();
+
+    if (!node) {
+      return;
+    }
+
+    const lineNodes = node.getElementsByTagName("a:r");
+
+    for (let i = 0; i < lineNodes.length; i++) {
+      const lineNode = lineNodes[i];
+
+      if (lineNode.textContent && lineNode.textContent.match(this.getCloseTag())) {
+        return lineNode;
+      }
+    }
+  }
+
   public appendNodeFromPlaceholder(placeholder: PPTXPlaceholder): void {
     const openTag = this.getOpenTag();
     const closeTag = this.getCloseTag();
@@ -107,22 +171,84 @@ export abstract class PPTXPlaceholder {
     const originalNode = this.getOriginalNode();
 
     if (closeNode == node) {
-      const textNodes = node.getElementsByTagName("a:t");
-      const hasOnlyOneTextNode = textNodes.length == 1;
+      const closeTagLineNode = this.getCloseTagLineNode();
+      const openTagLineNode = this.getOpenTagLineNode();
 
-      if (hasOnlyOneTextNode) {
-        const textNode = textNodes[0];
-        const textContent = originalNode.textContent;
+      if (openTagLineNode && closeTagLineNode == openTagLineNode) {
+        const textNodes = openTagLineNode.getElementsByTagName("a:t");
+        const hasOnlyOneTextNode = textNodes.length == 1;
 
-        if (textContent) {
-          const [content] = textContent.match(new RegExp(`${openTag}.*${closeTag}`)) || [];
+        if (hasOnlyOneTextNode) {
+          const textNode = textNodes[0];
+          const textContent = originalNode.textContent;
 
-          if (content && textNode.textContent) {
-            const finalContent = content.replace(openTag, "").replace(closeTag, "");
+          if (textContent) {
+            const [content] = textContent.match(new RegExp(`${openTag}.*${closeTag}`)) || [];
 
-            textNode.textContent = textNode.textContent.replace(closeTag, `${finalContent}${closeTag}`);
+            if (content && textNode.textContent) {
+              const finalContent = content.replace(openTag, "").replace(closeTag, "");
+
+              textNode.textContent = textNode.textContent.replace(closeTag, `${finalContent}${closeTag}`);
+            }
           }
         }
+      } else {
+        const originalOpenTagLineNode = this.getOriginalOpenTagLineNode();
+        const nodesToClone = [originalOpenTagLineNode];
+
+        let originalCloseTagLineNode = null;
+
+        if (this.getCloseNode() && originalOpenTagLineNode) {
+          for (
+            let nextNode = originalOpenTagLineNode.nextSibling;
+            !!nextNode;
+            nextNode = nextNode.nextSibling
+          ) {
+            nodesToClone.unshift(nextNode as Element);
+            if (nextNode.textContent && nextNode.textContent.match(closeTag)) {
+              originalCloseTagLineNode = nextNode;
+              break;
+            }
+          }
+        }
+
+        nodesToClone.forEach((nodeToClone) => {
+          if (!nodeToClone) {
+            return;
+          }
+
+          if (nodeToClone == originalOpenTagLineNode) {
+            const textNode = nodeToClone.getElementsByTagName("a:t")[0];
+            const textContent = textNode.textContent;
+
+            if (textContent) {
+              const [finalContent] = textContent.match(new RegExp(`${openTag}.*`)) || [];
+
+              if (finalContent) {
+                textNode.textContent = finalContent.replace(openTag, "");
+              }
+            }
+          }
+
+          if (nodeToClone == originalCloseTagLineNode && closeTagLineNode) {
+            const textNode = closeTagLineNode.getElementsByTagName("a:t")[0];
+            const textContent = textNode.textContent;
+
+            if (textContent) {
+              const [finalContent] = textContent.match(new RegExp(`.*${closeTag}`)) || [];
+
+              if (finalContent) {
+                textNode.textContent = finalContent.replace(closeTag, "");
+              }
+            }
+          }
+
+          if (closeTagLineNode && closeTagLineNode.parentNode && closeTagLineNode.nextSibling) {
+            closeTagLineNode.parentNode.insertBefore(nodeToClone, closeTagLineNode.nextSibling);
+          } else if (closeTagLineNode && closeTagLineNode.parentNode && !closeTagLineNode.nextSibling) {
+            closeTagLineNode.parentNode.appendChild(nodeToClone);
+          }
+        });
       }
     } else if (closeNode && closeNode.parentNode) {
       closeNode.parentNode.insertBefore(placeholder.getNode(), this.closeNode);
