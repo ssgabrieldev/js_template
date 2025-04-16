@@ -1,4 +1,4 @@
-# js-template
+# ts-gen-template
 Biblioteca de templates
 
 # Funcionalidades
