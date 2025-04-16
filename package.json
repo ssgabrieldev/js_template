@@ -8,8 +8,12 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "test": "jest --silent",
-    "test:v": "jest"
+    "test:v": "jest",
+    "prepublishOnly": "npm run build"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ssgabrieldev/js-template.git"
