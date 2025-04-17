@@ -3,21 +3,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch index.ts",
-      "request": "launch",
-      "program": "${workspaceFolder}/dist/index.js",
-      "cwd": "${workspaceFolder}",
-      "sourceMaps": true,
-      "type": "pwa-node",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
-      "skipFiles": [
-        "node_modules/**"
-      ],
-      "preLaunchTask": "npm run build"
-    },
-    {
       "type": "pwa-node",
       "name": "Jest",
       "request": "launch",
